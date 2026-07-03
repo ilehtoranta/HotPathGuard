@@ -7,6 +7,7 @@
     <Description>Roslyn analyzers for enforcing allocation-conscious hot-path performance contracts in .NET code.</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <PackageIcon>hotpathguard-icon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <NoWarn>$(NoWarn);RS2008;NU5128</NoWarn>
   </PropertyGroup>
@@ -21,6 +22,7 @@
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="" />
+    <None Include="..\..\assets\hotpathguard-icon.png" Pack="true" PackagePath="" />
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 

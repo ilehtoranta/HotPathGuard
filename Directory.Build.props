@@ -5,8 +5,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageVersion>0.1.0</PackageVersion>
-    <Authors>HotPathGuard contributors</Authors>
-    <Company>HotPathGuard contributors</Company>
+    <Authors>Ilkka Lehtoranta</Authors>
+    <Company>Ilkka Lehtoranta</Company>
+    <Copyright>Copyright (c) 2026 Ilkka Lehtoranta</Copyright>
+    <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/ilehtoranta/HotPathGuard</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

@@ -5,11 +5,13 @@
     <PackageId>HotPathGuard.Abstractions</PackageId>
     <Title>HotPathGuard Abstractions</Title>
     <Description>Attributes for marking .NET hot paths and documented hot-path allocation exceptions.</Description>
+    <PackageIcon>hotpathguard-icon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="" />
+    <None Include="..\..\assets\hotpathguard-icon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
 </Project>
