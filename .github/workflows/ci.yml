@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build, test, and pack
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore ./HotPathGuard.slnx
+
+      - name: Build
+        run: dotnet build ./HotPathGuard.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test ./HotPathGuard.slnx --configuration Release --no-build --logger trx --results-directory artifacts/test-results
+
+      - name: Pack
+        run: dotnet pack ./HotPathGuard.slnx --configuration Release --no-build --output artifacts/packages
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: artifacts/test-results
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: artifacts/packages/*.nupkg

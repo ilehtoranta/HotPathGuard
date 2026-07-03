@@ -1,0 +1,71 @@
+name: Publish NuGet Packages
+
+on:
+  push:
+    tags:
+      - v*.*.*
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Package version to publish, for example 0.1.0-preview.1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuget-publish-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish packages
+    runs-on: ubuntu-latest
+    environment: nuget
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Resolve package version
+        id: version
+        shell: pwsh
+        run: |
+          $version = "${{ inputs.version }}"
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            $version = "${{ github.ref_name }}"
+          }
+
+          if ($version.StartsWith("v", [StringComparison]::OrdinalIgnoreCase)) {
+            $version = $version.Substring(1)
+          }
+
+          if ($version -notmatch '^\d+\.\d+\.\d+([-.][0-9A-Za-z.-]+)?$') {
+            throw "Invalid package version '$version'. Use SemVer, for example 0.1.0 or 0.1.0-preview.1."
+          }
+
+          "value=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Restore
+        run: dotnet restore ./HotPathGuard.slnx
+
+      - name: Build
+        run: dotnet build ./HotPathGuard.slnx --configuration Release --no-restore -p:PackageVersion=${{ steps.version.outputs.value }}
+
+      - name: Test
+        run: dotnet test ./HotPathGuard.slnx --configuration Release --no-build
+
+      - name: Pack
+        run: dotnet pack ./HotPathGuard.slnx --configuration Release --no-build --output artifacts/packages -p:PackageVersion=${{ steps.version.outputs.value }}
+
+      - name: Publish HotPathGuard.Abstractions
+        run: dotnet nuget push "artifacts/packages/HotPathGuard.Abstractions.${{ steps.version.outputs.value }}.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Publish HotPathGuard.Analyzers
+        run: dotnet nuget push "artifacts/packages/HotPathGuard.Analyzers.${{ steps.version.outputs.value }}.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
