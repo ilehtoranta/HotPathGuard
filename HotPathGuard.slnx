@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HotPathGuard.Abstractions/HotPathGuard.Abstractions.csproj" />
+    <Project Path="src/HotPathGuard.Analyzers/HotPathGuard.Analyzers.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HotPathGuard.Analyzers.Tests/HotPathGuard.Analyzers.Tests.csproj" />
+  </Folder>
+</Solution>
