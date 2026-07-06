@@ -55,7 +55,7 @@ public int SelectVoice(int a, int b, int c)
 
 ## Philosophy
 
-HotPathGuard is a guardrail, not a profiler or a formal allocation proof. It catches common source-level mistakes in code that you already know is hot: object and array creation, closures, boxing, interpolated strings, LINQ and other known allocating APIs, async and iterator state machines, and calls into explicitly allocation-allowed members.
+HotPathGuard is a guardrail, not a profiler or a formal allocation proof. It catches common source-level mistakes in code that you already know is hot: object and array creation, closures, method-group-to-delegate conversions, boxing, interpolated strings, LINQ and other known allocating APIs, async and iterator state machines, and calls into explicitly allocation-allowed members.
 
 ## Build
 
