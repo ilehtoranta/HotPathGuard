@@ -208,6 +208,7 @@ public sealed class HotPathAllocationAnalyzer : DiagnosticAnalyzer
                     AnalyzeInvocation(context, invocation);
                     break;
                 case ExpressionSyntax expression:
+                    AnalyzeDelegateConversion(context, expression);
                     AnalyzeBoxing(context, expression);
                     break;
             }
@@ -250,6 +251,33 @@ public sealed class HotPathAllocationAnalyzer : DiagnosticAnalyzer
         if (IsKnownAllocatingApi(method))
         {
             Report(context, AllocatingApiRule, node.GetLocation(), method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
+        }
+    }
+
+    private static void AnalyzeDelegateConversion(SyntaxNodeAnalysisContext context, ExpressionSyntax node)
+    {
+        if (node.FirstAncestorOrSelf<ThrowStatementSyntax>() != null ||
+            node.FirstAncestorOrSelf<ThrowExpressionSyntax>() != null)
+        {
+            return;
+        }
+
+        if (node is not IdentifierNameSyntax and not MemberAccessExpressionSyntax)
+        {
+            return;
+        }
+
+        var convertedType = context.SemanticModel.GetTypeInfo(node, context.CancellationToken).ConvertedType;
+        if (convertedType?.TypeKind != TypeKind.Delegate)
+        {
+            return;
+        }
+
+        var symbolInfo = context.SemanticModel.GetSymbolInfo(node, context.CancellationToken);
+        if (symbolInfo.Symbol is IMethodSymbol ||
+            symbolInfo.CandidateSymbols.Any(symbol => symbol is IMethodSymbol))
+        {
+            Report(context, AllocationRule, node.GetLocation(), "method group delegate conversion");
         }
     }
 

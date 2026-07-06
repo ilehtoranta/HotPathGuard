@@ -140,6 +140,83 @@ public sealed class HotPathAllocationAnalyzerTests
     }
 
     [Fact]
+    public async Task ReportsMethodGroupDelegateConversionsInHotPath()
+    {
+        var diagnostics = await AnalyzeAsync("""
+            using System;
+
+            namespace TestCode;
+
+            [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Constructor)]
+            internal sealed class HotPathAttribute : Attribute { }
+
+            [HotPath]
+            internal sealed class Runtime
+            {
+                public uint Frame(uint value)
+                {
+                    return Consume(value, ReadPhysicalLong);
+                }
+
+                private static uint Consume(uint value, Func<uint, uint> read)
+                {
+                    return read(value);
+                }
+
+                private uint ReadPhysicalLong(uint address)
+                {
+                    return address;
+                }
+            }
+            """);
+
+        Assert.Contains(diagnostics, diagnostic =>
+            diagnostic.Id == HotPathAllocationAnalyzer.AllocationDiagnosticId &&
+            diagnostic.GetMessage().Contains("method group delegate conversion", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task AllowsCachedDelegateUseInHotPath()
+    {
+        var diagnostics = await AnalyzeAsync("""
+            using System;
+
+            namespace TestCode;
+
+            [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Constructor)]
+            internal sealed class HotPathAttribute : Attribute { }
+
+            internal sealed class Runtime
+            {
+                private readonly Func<uint, uint> _readPhysicalLong;
+
+                public Runtime()
+                {
+                    _readPhysicalLong = ReadPhysicalLong;
+                }
+
+                [HotPath]
+                public uint Frame(uint value)
+                {
+                    return Consume(value, _readPhysicalLong);
+                }
+
+                private static uint Consume(uint value, Func<uint, uint> read)
+                {
+                    return read(value);
+                }
+
+                private uint ReadPhysicalLong(uint address)
+                {
+                    return address;
+                }
+            }
+            """);
+
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
     public async Task ReportsAllocationsInHotPathPropertiesAndAccessors()
     {
         var diagnostics = await AnalyzeAsync("""
